@@ -3,6 +3,7 @@ name: Package Lightweight APK Builder
 on:
   push:
     branches: [main]
+    paths: [ApkBuilder.ps1, Start.bat, README.txt, .github/workflows/release.yml]
   workflow_dispatch:
 
 permissions:
