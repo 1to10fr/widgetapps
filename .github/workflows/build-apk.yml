@@ -21,7 +21,6 @@ jobs:
           S=$(find . -maxdepth 3 \( -name settings.gradle -o -name settings.gradle.kts \) -not -path './.git/*' | head -1)
           if [ -z "$S" ]; then echo "No Android project found (settings.gradle[.kts]). Upload the PhotoWidgets project to this repo."; exit 1; fi
           D=$(dirname "$S"); echo "dir=$D" >> "$GITHUB_OUTPUT"; echo "Project: $D"
-          if [ ! -f "$D/gradlew" ]; then echo "gradlew is missing in $D. Upload the full project including gradlew, gradlew.bat and the gradle folder."; exit 1; fi
 
       - uses: actions/setup-java@v4
         with:
@@ -29,12 +28,13 @@ jobs:
           java-version: '17'
 
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
       - name: Build debug APK
         working-directory: ${{ steps.find.outputs.dir }}
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --console=plain
+          if [ -f gradlew ]; then chmod +x gradlew && ./gradlew assembleDebug --console=plain; else gradle assembleDebug --console=plain; fi
 
       - name: Collect APK
         run: |

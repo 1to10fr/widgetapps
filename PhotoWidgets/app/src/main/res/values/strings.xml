@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">PhotoWidgets</string>
+    <string name="widget_empty">Open PhotoWidgets and choose photos</string>
+    <string name="widget_desc">Shows your photos. Tap to see the next one.</string>
+</resources>
