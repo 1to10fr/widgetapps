@@ -1,0 +1,5 @@
+AndroidSDK/
+tools/
+settings.json
+last_build_log.txt
+APK_Output/*.apk

@@ -1,0 +1,45 @@
+name: Package Lightweight APK Builder
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check script is plain ASCII
+        run: |
+          if LC_ALL=C grep -nP '[^\x00-\x7F]' ApkBuilder.ps1 Start.bat README.txt; then
+            echo "Non-ASCII characters found (breaks Windows PowerShell 5.1)"; exit 1
+          fi
+
+      - name: Syntax-check the PowerShell script
+        shell: pwsh
+        run: |
+          $errs = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("$PWD/ApkBuilder.ps1", [ref]$null, [ref]$errs)
+          if ($errs) { $errs | ForEach-Object { Write-Error $_.ToString() }; exit 1 }
+          Write-Host "Syntax OK"
+
+      - name: Build ZIP
+        run: |
+          mkdir -p LightweightAPKBuilder/Projects LightweightAPKBuilder/APK_Output
+          cp Start.bat ApkBuilder.ps1 README.txt LightweightAPKBuilder/
+          touch LightweightAPKBuilder/Projects/.keep LightweightAPKBuilder/APK_Output/.keep
+          zip -r LightweightAPKBuilder.zip LightweightAPKBuilder
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" LightweightAPKBuilder.zip \
+            --title "Lightweight APK Builder $TAG" \
+            --notes "Download LightweightAPKBuilder.zip, extract it, and double-click Start.bat. Steps are in README.txt."
